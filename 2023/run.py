@@ -5,17 +5,22 @@ from pathlib import Path
 import shutil
 import sys
 
+input_dir_path = 'input'
+
 def day_solver_filepath(day):
     return f'{day}.py'
 
 def day_input_filepath(day):
-    return os.path.join('input', f'{day}.txt')
+    return os.path.join(input_dir_path, f'{day}.txt')
 
 def create_day(day):
     solver_filepath = day_solver_filepath(day)
     if not os.path.exists(solver_filepath):
         shutil.copy('template.py', solver_filepath)
         print(f'Created {solver_filepath} from template')
+
+    if not os.path.exists(input_dir_path):
+        os.mkdir(input_dir_path)
 
     input_filepath = day_input_filepath(day)
     if not os.path.exists(input_filepath):
