@@ -45,6 +45,8 @@ LJ.LJ"""
             if pipe_map[y][x] == 'S':
                 break
 
+        [ print(''.join(row)) for row in pipe_map ]
+
         # Now count them
         outside_dots = 0
         inside_dots = 0
@@ -55,7 +57,7 @@ LJ.LJ"""
                 elif tile == 'I':
                     inside_dots += 1
 
-        return outside_dots, inside_dots
+        return ('O', outside_dots), ('I', inside_dots)
 
     def test_input_two(self):
         return """
@@ -146,27 +148,25 @@ def get_next_direction(tiles, y, x, current_dir):
 
 def replace_dots_to_sides(tiles, y, x, current_dir):
     # assume these are outside
-    left_replaced = replace_dots_in_direction(tiles, y, x, left_90_deg[current_dir], 'O')
+    replace_dots_in_direction(tiles, y, x, left_90_deg[current_dir], 'O')
 
     # assume these are inside
-    right_replaced = replace_dots_in_direction(tiles, y, x, right_90_deg[current_dir], 'I')
-
-    return left_replaced, right_replaced
+    replace_dots_in_direction(tiles, y, x, right_90_deg[current_dir], 'I')
 
 def replace_dots_in_direction(tiles, y, x, dir_coords, replacement):
     rows = len(tiles)
     cols = len(tiles[0])
 
+    queue = []
     y_d, x_d = dir_coords
-    next_y, next_x = y + y_d, x + x_d
+    queue.append((y + y_d, x + x_d))
 
-    replaced = 0
-    while 0 <= next_y < rows and 0 <= next_x < cols and tiles[next_y][next_x] in ['.', 'O', 'I']:
-        tiles[next_y][next_x] = replacement
-        next_y, next_x = next_y + y_d, next_x + x_d
-        replaced += 1
-
-    return replaced
+    while len(queue):
+        y, x = queue.pop(0)
+        if 0 <= y < rows and 0 <= x < cols and tiles[y][x] == '.':
+            tiles[y][x] = replacement
+            for y_d, x_d in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                queue.append((y + y_d, x + x_d))
 
 
 opposite_dir = {
