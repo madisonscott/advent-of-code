@@ -7,7 +7,9 @@ class Solver(BaseSolver):
 
         total = 0
         for row, broken_recs in spring_rows:
-            total += count_possible_rows(row, broken_recs)
+            x = count_possible_rows(row, broken_recs)
+            print(x)
+            total += x
 
         return total
 
@@ -19,53 +21,101 @@ class Solver(BaseSolver):
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"""
 
+    # TODO: fix this garbage
     def solve_part_two(self, input):
-        spring_rows = parse_input(input, expanded = True)
+        spring_rows = parse_input(input)
 
         total = 0
         for row, broken_recs in spring_rows:
             print(row)
             print(broken_recs)
-            possible = count_possible_rows(row, broken_recs)
+            possible = count_possible_rows_expanded(row, broken_recs)
             print(possible)
             total += possible
 
+            # print(expand_row_and_broken_recs(row, broken_recs, 1))
+            # print('\n')
+            # print(expand_row_and_broken_recs(row + ['?'] + row, broken_recs * 2, 2))
+            # print('\n\n')
+
         return total
 
+    def test_input_two(self):
+        return """.??..??...?##. 1,1,3
+?#?#?#?#?#?#?#? 1,3,1,6
+????.#...#... 4,1,1
+????.######..#####. 1,6,5
+?###???????? 3,2,1"""
 
-def parse_input(input, expanded = False):
+
+def parse_input(input):
     spring_rows = []
     for row in input.split('\n'):
         spring_conditions, broken_recs = row.split(' ')
-        if expanded:
-            spring_rows.append((
-                list('?'.join([ spring_conditions ] * 5)),
-                [ int(n) for n in broken_recs.split(',') * 5 ])
-            )
-        else:
-            spring_rows.append((
-                list(spring_conditions),
-                [ int(n) for n in broken_recs.split(',') ])
-            )
+        spring_rows.append((
+            list(spring_conditions),
+            [ int(n) for n in broken_recs.split(',') ])
+        )
     return spring_rows
 
 
-def count_possible_rows(row, actual_broken_recs, possible_row = ''):
+def count_possible_rows(row, broken_recs, possible_row = ''):
     if len(row) == len(possible_row):
-        if is_matching_arrangement(possible_row, actual_broken_recs):
+        if is_matching_arrangement(possible_row, broken_recs):
             return 1
         return 0
-    elif not is_possible_arrangement(possible_row, actual_broken_recs):
+    elif not is_possible_arrangement(possible_row, broken_recs):
         return 0
 
     i = len(possible_row)
     if row[i] == '?':
         return (
-            count_possible_rows(row, actual_broken_recs, possible_row + '.') +
-            count_possible_rows(row, actual_broken_recs, possible_row + '#')
+            count_possible_rows(row, broken_recs, possible_row + '.') +
+            count_possible_rows(row, broken_recs, possible_row + '#')
         )
     else:
-        return count_possible_rows(row, actual_broken_recs, possible_row + row[i])
+        return count_possible_rows(row, broken_recs, possible_row + row[i])
+
+
+def count_possible_rows_expanded(
+        row,
+        broken_recs,
+        possible_row = '',
+        expansion_factor = 1):
+
+    if len(row) == len(possible_row):
+        if is_matching_arrangement(possible_row, broken_recs):
+            return 1
+        elif expansion_factor > 5:
+            return 0
+        else:
+            row, broken_recs, expansion_factor = expand(row, broken_recs, expansion_factor)
+            # print('expanded to', expansion_factor)
+            # print(row)
+            # print(broken_recs)
+            # print('\n')
+    elif not is_possible_arrangement(possible_row, broken_recs):
+        return 0
+
+    i = len(possible_row)
+    if row[i] == '?':
+        return (
+            count_possible_rows_expanded(row, broken_recs, possible_row + '.', expansion_factor) +
+            count_possible_rows_expanded(row, broken_recs, possible_row + '#', expansion_factor)
+        )
+    else:
+        return count_possible_rows_expanded(row, broken_recs, possible_row + row[i], expansion_factor)
+
+def expand(row, broken_recs, expansion_factor):
+    real_row_len = int((len(row) - (expansion_factor - 1)) / expansion_factor)
+    real_broken_recs_len = int(len(broken_recs) / expansion_factor)
+    # print(expansion_factor, real_row_len, real_broken_recs_len)
+    new_expansion_factor = expansion_factor + 1
+    return (
+      list('?'.join(row[:real_row_len] * new_expansion_factor)),
+      broken_recs[:real_broken_recs_len] * new_expansion_factor,
+      new_expansion_factor
+    )
 
 def is_possible_arrangement(possible_row, actual_broken_recs):
     possible_groups = possible_row.split('.')
