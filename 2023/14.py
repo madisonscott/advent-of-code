@@ -47,7 +47,7 @@ O.#..O.#.#
         return weigh(map)
 
 def tilt(map, direction):
-    d_i = direction_new[direction]
+    d_i = direction_factor[direction]
     axis_1_length = len(map) if direction == 'N' or direction == 'S' else len(map[0])
 
     # if we're tilting to the front, start from the front
@@ -60,11 +60,11 @@ def tilt(map, direction):
 
 def get_line(map, i, direction):
     line = [ map[y][i] for y in range(len(map)) ] if direction == 'N' or direction == 'S' else map[i]
-    corrected_line = line if direction_new[direction] == -1 else list(reversed(line))
+    corrected_line = line if direction_factor[direction] == -1 else list(reversed(line))
     return ''.join(corrected_line)
 
 def replace_line(map, i, direction, new_line):
-    corrected_line = new_line if direction_new[direction] == -1 else list(reversed(new_line))
+    corrected_line = new_line if direction_factor[direction] == -1 else list(reversed(new_line))
     if direction == 'N' or direction == 'S':
         for j in range(len(corrected_line)):
             map[j][i] = corrected_line[j]
@@ -108,14 +108,7 @@ def weigh(map):
         total += weight * map[i].count('O')
     return total
 
-direction_coords = {
-    'N': (-1, 0),
-    'W': (0, -1),
-    'S': (1, 0),
-    'E': (0, 1),
-}
-
-direction_new = {
+direction_factor = {
     'N': -1,
     'W': -1,
     'S': 1,
